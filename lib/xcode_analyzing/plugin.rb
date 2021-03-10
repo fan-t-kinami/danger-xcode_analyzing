@@ -14,6 +14,7 @@ module Danger
         attr_accessor :xcodebuild_scheme
         attr_accessor :xcodebuild_configuration
         attr_accessor :xcodebuild_target_sdk
+        attr_accessor :xcodebuild_archs
 
         attr_accessor :analyzedResultsDir
         def analyzedResultsDir
@@ -36,6 +37,11 @@ module Danger
             if xcodebuild_target_sdk.nil? || xcodebuild_target_sdk.empty?
                 target_sdk = 'iphoneos'
             end
+            
+            archs = xcodebuild_archs
+            if xcodebuild_archs.nil? || xcodebuild_archs.empty?
+                archs = 'arm64'
+            end
 
             if xcodebuild_project_dir.nil? || xcodebuild_project_dir.empty?
                 puts "xcode project is root."
@@ -48,10 +54,10 @@ module Danger
                     warn("(- -;;) cannot find workspace or xcodeproj", sticky: false)
                     return
                 else
-                    system "xcodebuild analyze -project #{xcodebuild_project} -scheme #{xcodebuild_scheme} -configuration #{xcodebuild_configuration} -sdk #{target_sdk} CLANG_ANALYZER_OUTPUT=plist CLANG_ANALYZER_OUTPUT_DIR=\"$(pwd)/clang\""
+                    system "xcodebuild analyze -project #{xcodebuild_project} -scheme #{xcodebuild_scheme} -configuration #{xcodebuild_configuration} -sdk #{target_sdk} CLANG_ANALYZER_OUTPUT=plist CLANG_ANALYZER_OUTPUT_DIR=\"$(pwd)/clang\" ARCHS=#{archs}"
                 end
             else
-                system "xcodebuild analyze -workspace #{xcodebuild_workspace} -scheme #{xcodebuild_scheme} -configuration #{xcodebuild_configuration} -sdk #{target_sdk} CLANG_ANALYZER_OUTPUT=plist CLANG_ANALYZER_OUTPUT_DIR=\"$(pwd)/clang\""
+                system "xcodebuild analyze -workspace #{xcodebuild_workspace} -scheme #{xcodebuild_scheme} -configuration #{xcodebuild_configuration} -sdk #{target_sdk} CLANG_ANALYZER_OUTPUT=plist CLANG_ANALYZER_OUTPUT_DIR=\"$(pwd)/clang\" ARCHS=#{archs}"
             end
 
             unless FileTest.exists? analyzedResultsDir
